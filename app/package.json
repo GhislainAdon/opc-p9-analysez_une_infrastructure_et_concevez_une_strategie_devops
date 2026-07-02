@@ -1,0 +1,20 @@
+{
+  "name": "glossaflow-api",
+  "version": "0.1.0",
+  "description": "Squelette d'initialisation du pipeline CI/CD GlossaPro (service GlossaFlow API)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "jest --ci --reporters=default",
+    "lint": "eslint src tests"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  }
+}
