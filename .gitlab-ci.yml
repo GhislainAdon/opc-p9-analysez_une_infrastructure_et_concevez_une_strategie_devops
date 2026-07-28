@@ -26,8 +26,11 @@ stages:
   - notify
 
 variables:
-  # Communication avec le service docker:dind sans TLS (runners partagés)
+  # Communication avec le service docker:dind sans TLS (runners partagés).
+  # DOCKER_HOST est explicite : le client docker doit joindre le service `dind`
+  # par le réseau, pas la socket locale (qui n'existe pas dans le conteneur).
   DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: tcp://docker:2375
   # Tag de l'image = branche + SHA court : chaque commit est traçable
   IMAGE: $CI_REGISTRY_IMAGE/glossaflow-api:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
   npm_config_cache: $CI_PROJECT_DIR/.npm
