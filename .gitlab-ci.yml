@@ -1,0 +1,184 @@
+# Pipeline CI/CD d'initialisation — GlossaPro (squelette glossaflow-api)
+#
+# C'est le pipeline de référence du projet : il tourne sur GitLab CI, et le
+# dépôt miroir GitHub exécute le même enchaînement (.github/workflows/ci.yml).
+#
+# Six étapes, dans l'ordre. Si l'une échoue, les suivantes ne partent pas.
+#   lint     : qualité de code (ESLint)
+#   test     : tests unitaires (Jest) — le pipeline échoue si un test est rouge
+#   package  : image Docker construite et publiée dans le registre GitLab
+#   security : Trivy (vulnérabilités de l'image) + gitleaks (secrets dans le
+#              dépôt) — les deux sont BLOQUANTS
+#   verify   : smoke test — on démarre vraiment le conteneur et on l'interroge
+#   notify   : message Discord à l'équipe (succès comme échec)
+#
+# Variables CI/CD à définir dans Settings > CI/CD > Variables (Masked) :
+#   DISCORD_WEBHOOK_URL  -> active l'étape notify (sans elle, les jobs sont
+#                           simplement ignorés : le pipeline reste vert)
+# Les variables $CI_REGISTRY_* sont fournies automatiquement par GitLab.
+
+stages:
+  - lint
+  - test
+  - package
+  - security
+  - verify
+  - notify
+
+variables:
+  # Communication avec le service docker:dind sans TLS (runners partagés)
+  DOCKER_TLS_CERTDIR: ""
+  # Tag de l'image = branche + SHA court : chaque commit est traçable
+  IMAGE: $CI_REGISTRY_IMAGE/glossaflow-api:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+  npm_config_cache: $CI_PROJECT_DIR/.npm
+
+# Base commune aux jobs Node : même image, même dossier de travail, même cache
+.node:
+  image: node:20-alpine
+  before_script:
+    - cd app
+    - npm install
+  cache:
+    key:
+      files: [app/package.json]
+    paths: [.npm]
+
+# ---------------------------------------------------------------- lint
+
+lint:
+  extends: .node
+  stage: lint
+  script:
+    - npm run lint
+
+# ---------------------------------------------------------------- test
+
+test:
+  extends: .node
+  stage: test
+  script:
+    - npm test
+
+# ------------------------------------------------------------- package
+
+# Construit l'image de production et la publie dans le registre du projet.
+# C'est cette image exacte (même tag, même contenu) qui est scannée puis
+# démarrée plus bas : on ne teste jamais autre chose que ce qu'on livrerait.
+build-image:
+  image: docker:27
+  stage: package
+  services:
+    - docker:27-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - docker build -t "$IMAGE" app
+    - docker push "$IMAGE"
+
+# ------------------------------------------------------------ security
+
+# Scan de vulnérabilités de l'image. Bloquant sur HIGH/CRITICAL : une faille
+# grave arrête la chaîne. Les CVE tolérées doivent être justifiées et datées
+# dans .trivyignore. Le rapport reste téléchargeable même quand le job échoue.
+trivy:
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  stage: security
+  needs: [build-image]
+  variables:
+    TRIVY_USERNAME: $CI_REGISTRY_USER
+    TRIVY_PASSWORD: $CI_REGISTRY_PASSWORD
+  cache:
+    key: trivy-db
+    paths: [.trivycache]
+  script:
+    - mkdir -p reports
+    - trivy image --cache-dir .trivycache --ignorefile .trivyignore
+      --format table --output reports/trivy.txt
+      --exit-code 1 --severity HIGH,CRITICAL "$IMAGE"
+  artifacts:
+    when: always
+    paths: [reports/trivy.txt]
+
+# Recherche de secrets (mots de passe, tokens, clés) dans TOUT l'historique
+# git, pas seulement le dernier commit — un secret supprimé reste lisible dans
+# les commits précédents. Les chemins légitimes sont listés dans .gitleaks.toml.
+# needs: [] -> démarre immédiatement, il n'a besoin que des sources.
+gitleaks:
+  image:
+    name: zricethezav/gitleaks:latest
+    entrypoint: [""]
+  stage: security
+  needs: []
+  variables:
+    GIT_DEPTH: "0" # historique complet
+  script:
+    - mkdir -p reports
+    - gitleaks detect --source . --config .gitleaks.toml --no-banner --redact
+      --report-format json --report-path reports/gitleaks.json --exit-code 1
+  artifacts:
+    when: always
+    paths: [reports/gitleaks.json]
+
+# -------------------------------------------------------------- verify
+
+# Smoke test : le build peut réussir alors que l'application ne démarre pas.
+# On lance donc le conteneur et on appelle ses deux routes. Tant que ce job
+# n'est pas vert, l'image n'est pas considérée comme déployable.
+smoke-test:
+  image: docker:27
+  stage: verify
+  needs: [trivy]
+  services:
+    - docker:27-dind
+  before_script:
+    - apk add --no-cache curl
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - docker run -d --name smoke -p 3000:3000 "$IMAGE"
+    # L'application met une seconde à écouter : on réessaie au lieu de dormir.
+    - |
+      for i in $(seq 1 15); do
+        curl -fs http://docker:3000/health && break
+        echo "tentative $i/15 — l'API ne répond pas encore"; sleep 2
+      done
+    - curl -fs http://docker:3000/health | grep '"status":"ok"'
+    - |
+      curl -fs -X POST http://docker:3000/translate \
+        -H "Content-Type: application/json" \
+        -d '{"text":"bonjour","target":"en"}' | grep '\[en\] bonjour'
+    - echo "Smoke test OK — l'image démarre et répond."
+  after_script:
+    - docker logs smoke || true
+
+# -------------------------------------------------------------- notify
+
+# Retour d'information immédiat à l'équipe (boucle de feedback CALMS) : Dev et
+# Ops voient le résultat sans surveiller l'onglet Pipelines. Les jobs ne se
+# déclenchent que si le webhook est configuré, pour ne pas casser un fork.
+.notify:
+  image: alpine:3.20
+  stage: notify
+  before_script:
+    - apk add --no-cache curl
+
+notify-success:
+  extends: .notify
+  rules:
+    - if: "$DISCORD_WEBHOOK_URL"
+      when: on_success
+  script:
+    - |
+      curl -fsS -H "Content-Type: application/json" -X POST "$DISCORD_WEBHOOK_URL" \
+        -d "{\"username\":\"GlossaPro CI\",\"content\":\"✅ Pipeline **réussi** — \`$CI_PROJECT_PATH\` / branche \`$CI_COMMIT_REF_NAME\` ($CI_COMMIT_SHORT_SHA)\n$CI_PIPELINE_URL\"}"
+
+notify-failure:
+  extends: .notify
+  rules:
+    - if: "$DISCORD_WEBHOOK_URL"
+      when: on_failure
+  script:
+    - |
+      curl -fsS -H "Content-Type: application/json" -X POST "$DISCORD_WEBHOOK_URL" \
+        -d "{\"username\":\"GlossaPro CI\",\"content\":\"❌ Pipeline **en échec** — \`$CI_PROJECT_PATH\` / branche \`$CI_COMMIT_REF_NAME\` ($CI_COMMIT_SHORT_SHA)\n$CI_PIPELINE_URL\"}"

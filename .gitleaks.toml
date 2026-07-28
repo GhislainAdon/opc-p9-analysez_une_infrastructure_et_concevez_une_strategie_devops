@@ -1,0 +1,21 @@
+# Configuration gitleaks — recherche de secrets dans le dépôt (job CI `gitleaks`).
+#
+# Principe : aucun mot de passe, token, clé privée ou chaîne de connexion ne doit
+# se trouver dans le code. Les secrets vivent dans les variables CI/CD masquées
+# (GitLab : Settings > CI/CD > Variables ; GitHub : Settings > Secrets) et sont
+# injectés au moment de l'exécution.
+#
+# Ce fichier étend les règles par défaut de gitleaks et déclare une allowlist
+# pour les chemins LÉGITIMES (gabarits contenant des valeurs factices). Tout
+# secret réel hors de cette liste fait échouer le job.
+title = "GlossaPro — gitleaks"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Chemins légitimes : gabarits d'exemple et empreintes de dépendances"
+paths = [
+  '''(^|/)\.env\.example$''',      # gabarit d'environnement local (valeurs factices)
+  '''(^|/)package-lock\.json$''',  # empreintes d'intégrité npm, pas des secrets
+]
