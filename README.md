@@ -1,5 +1,7 @@
 # GlossaPro — Pipeline CI/CD d'initialisation
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/GhislainAdon/opc-p9-analysez_une_infrastructure_et_concevez_une_strategie_devops/tree/solution?quickstart=1)
+
 Bienvenue ! Ce dépôt est la **base de travail** de la transformation DevOps de
 GlossaPro. Il contient un service d'exemple (`glossaflow-api`) et un **pipeline
 d'intégration continue complet** que tu peux lire, exécuter et copier pour ton
@@ -7,6 +9,13 @@ propre composant.
 
 > 🎯 **Ce README est écrit pour toi, développeur ou développeuse junior** : tout ce
 > qu'il faut pour démarrer tient sur cette page. Aucun prérequis DevOps.
+
+> 💻 **Rien à installer : clique sur le bouton ci-dessus.** Il ouvre un
+> **Codespace** — un VS Code dans le navigateur, avec Node 20 et Docker déjà
+> installés et les dépendances posées pour toi. Tu peux y lancer toutes les
+> commandes de cette page, y compris `docker build`. Pense à **arrêter le
+> Codespace** quand tu as fini (onglet *Codespaces* de GitHub) : les heures
+> gratuites sont limitées.
 
 ## C'est quoi, ce pipeline ?
 
@@ -90,6 +99,7 @@ app/
 .github/workflows/ci.yml # le même enchaînement sur le miroir GitHub
 .trivyignore             # exceptions de vulnérabilités (gouvernées par l'équipe plateforme)
 .gitleaks.toml           # chemins légitimes exclus du scan de secrets
+.devcontainer/           # environnement prêt à l'emploi (Codespaces / VS Code)
 ```
 
 ## Et la suite ?

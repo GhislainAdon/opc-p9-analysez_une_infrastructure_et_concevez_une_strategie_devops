@@ -1,0 +1,27 @@
+{
+  "name": "glossapro-pipeline-initialise",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": { "moby": false }
+  },
+  "postCreateCommand": "cd app && npm install && echo 'Environnement prêt — voir le README : npm test, npm start, docker build'",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "ms-azuretools.vscode-docker",
+        "gitlab.gitlab-workflow"
+      ]
+    }
+  },
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": { "label": "glossaflow-api", "onAutoForward": "notify" }
+  }
+}
