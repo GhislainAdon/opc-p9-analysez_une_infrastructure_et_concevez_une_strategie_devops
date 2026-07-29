@@ -1,26 +1,19 @@
-# GlossaPro — Pipeline CI/CD
+# GlossaPro — Pipeline CI/CD initialisé
 
-Dépôt du pipeline CI/CD initialisé dans le cadre de la transformation DevOps de GlossaPro.
+Dépôt du **pipeline CI/CD d'initialisation** de la transformation DevOps de GlossaPro
+(projet 9 — Option B, parcours Expert DevOps).
 
-> Ce README s'adresse aux développeurs juniors de l'équipe : il explique comment le pipeline
-> fonctionne, comment contribuer, et où trouver la documentation détaillée.
+## 👉 Le contenu est sur la branche `solution`
 
-## Statut
+Cette branche `master` est la **baseline** : le point de départ, conservé pour que
+l'historique montre ce qui a été construit par-dessus.
 
-🚧 Initialisation — la structure du pipeline et la documentation seront complétées au fil du projet.
+| Où aller | Lien |
+|---|---|
+| **Le pipeline, l'application et le README complet** | [branche `solution`](../../tree/solution) |
+| Le pipeline de référence (GitLab CI) | [`.gitlab-ci.yml`](../../blob/solution/.gitlab-ci.yml) |
+| Le même enchaînement sur le miroir GitHub | [`.github/workflows/ci.yml`](../../blob/solution/.github/workflows/ci.yml) |
 
-## Structure prévue
-
-```
-.
-├── .github/workflows/   # Pipelines CI/CD (GitHub Actions)
-├── app/                 # Application de démonstration industrialisée
-├── iac/                 # Infrastructure as Code
-└── docs/                # Documentation technique
-```
-
-## Démarrage rapide
-
-1. Cloner le dépôt : `git clone <url>`
-2. Consulter `docs/` pour l'architecture et les conventions.
-3. Toute contribution passe par une merge request avec pipeline vert.
+Le pipeline enchaîne **lint → tests → package → sécurité (Trivy + gitleaks) → smoke test
+→ notification**. Le README de la branche `solution` est rédigé pour un développeur
+junior : démarrage en 5 minutes, cycle de contribution complet, règles d'or.
