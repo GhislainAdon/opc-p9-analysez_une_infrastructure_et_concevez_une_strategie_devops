@@ -42,10 +42,11 @@ Le résultat est visible dans **CI/CD → Pipelines** (GitLab) ou dans l'onglet
 
 ## Démarrer en local (5 minutes)
 
-Prérequis : [Node.js 20](https://nodejs.org) (et [Docker](https://docs.docker.com/get-docker/) pour l'étape 4, facultatif en local).
+Prérequis : [Node.js 20](https://nodejs.org) (et [Docker](https://docs.docker.com/get-docker/) pour l'étape 3, facultatif en local). Dans un Codespace, tout est déjà là.
 
 ```bash
-git clone <url-du-depot> && cd opc-p9*/app
+git clone -b solution https://gitlab.com/openclassrooms7804126/opc-p9-analysez_une_infrastructure_et_concevez_une_strategie_devops.git
+cd opc-p9-*/app
 
 npm install        # installe les dépendances
 npm test           # lance les tests — tu dois voir 3 tests verts ✅
@@ -74,7 +75,7 @@ docker run -p 3000:3000 glossaflow-api
 
 ## Comment contribuer (le cycle complet)
 
-1. **Crée une branche** depuis `master` : `git checkout -b feat/ma-fonctionnalite`
+1. **Crée une branche** depuis la branche de travail (`solution` sur ce dépôt) : `git checkout solution && git checkout -b feat/ma-fonctionnalite`
 2. **Code** ta modification **et son test** (regarde `app/tests/server.test.js` pour un modèle — un test = quelques lignes).
 3. **Vérifie en local** : `npm run lint && npm test` (les mêmes commandes que le pipeline — pas de surprise).
 4. **Pousse et ouvre une merge request** (*pull request* sur GitHub) : le pipeline se lance tout seul, ses statuts s'affichent dans la MR.
