@@ -112,5 +112,10 @@ sur approbation. La structure du pipeline (lint → test → package → sécuri
 vérification → notification) restera la même — ce que tu apprends ici s'applique à
 tous les composants GlossaFlow et GlossaLearn.
 
+## Documentation du projet
+
+- 📓 **[Journal d'Utilisation de l'IA (Notion)](https://app.notion.com/p/37aee836963f81d1b2bed325c935df23?v=37aee836963f81099ad8000cb0c04500&source=copy_link)** : journal de suivi de l'usage réfléchi de l'IA et de l'analyse de ses réponses tout au long du projet.
+- 📄 Les trois documents de la transformation (rapport d'analyse, document technique, proposition de processus DevOps) accompagnent ce dépôt dans le dossier de livraison.
+
 **Une question ?** Canal `#plateforme` — aucune question n'est bête, et si la
 réponse manque dans ce README, c'est le README qu'on corrige.
