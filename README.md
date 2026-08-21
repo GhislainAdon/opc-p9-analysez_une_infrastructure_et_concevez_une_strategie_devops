@@ -35,10 +35,11 @@ Le résultat est visible dans **CI/CD → Pipelines** (GitLab) ou dans l'onglet
 **Actions** (miroir GitHub) : vert = tout est bon, rouge = clique sur le job en
 échec pour lire les logs, ils te disent quoi corriger.
 
-> **Deux plateformes, un seul enchaînement.** Le dépôt de référence est sur
-> **GitLab** (`.gitlab-ci.yml`) ; le miroir **GitHub** rejoue les mêmes étapes
-> (`.github/workflows/ci.yml`). Tu peux travailler indifféremment sur l'un ou
-> l'autre : les commandes de vérification locales sont identiques.
+> **Deux plateformes, un même enchaînement de contrôles.** Le dépôt de référence
+> est sur **GitLab** (`.gitlab-ci.yml`, 6 étapes) ; le miroir **GitHub**
+> (`.github/workflows/ci.yml`) rejoue les **5 étapes de contrôle** — seule la
+> notification (étape 6) n'y est pas câblée. Tu peux travailler indifféremment sur
+> l'un ou l'autre : les commandes de vérification locales sont identiques.
 
 ## Démarrer en local (5 minutes)
 
@@ -97,7 +98,7 @@ app/
 ├── .eslintrc.json       # règles de style
 └── Dockerfile           # image de production (multi-stage, utilisateur non-root)
 .gitlab-ci.yml           # LE pipeline (référence) — chaque job y est commenté
-.github/workflows/ci.yml # le même enchaînement sur le miroir GitHub
+.github/workflows/ci.yml # les 5 mêmes étapes de contrôle (miroir GitHub)
 .trivyignore             # exceptions de vulnérabilités (gouvernées par l'équipe plateforme)
 .gitleaks.toml           # chemins légitimes exclus du scan de secrets
 .devcontainer/           # environnement prêt à l'emploi (Codespaces / VS Code)

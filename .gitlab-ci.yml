@@ -1,7 +1,8 @@
 # Pipeline CI/CD d'initialisation — GlossaPro (squelette glossaflow-api)
 #
 # C'est le pipeline de référence du projet : il tourne sur GitLab CI, et le
-# dépôt miroir GitHub exécute le même enchaînement (.github/workflows/ci.yml).
+# dépôt miroir GitHub exécute les cinq mêmes étapes de contrôle
+# (.github/workflows/ci.yml) ; seule la notification n'y est pas câblée.
 #
 # Six étapes, dans l'ordre. Si l'une échoue, les suivantes ne partent pas.
 #   lint     : qualité de code (ESLint)
@@ -85,7 +86,7 @@ build-image:
 # dans .trivyignore. Le rapport reste téléchargeable même quand le job échoue.
 trivy:
   image:
-    name: aquasec/trivy:latest
+    name: aquasec/trivy:0.74.0
     entrypoint: [""]
   stage: security
   needs: [build-image]
@@ -110,7 +111,7 @@ trivy:
 # needs: [] -> démarre immédiatement, il n'a besoin que des sources.
 gitleaks:
   image:
-    name: zricethezav/gitleaks:latest
+    name: zricethezav/gitleaks:v8.30.1
     entrypoint: [""]
   stage: security
   needs: []
