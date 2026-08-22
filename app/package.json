@@ -13,7 +13,7 @@
   "dependencies": {
     "eslint-plugin-security": "^2.1.1",
     "express": "^4.19.2",
-    "jest-junit": "^16.0.0"
+    "jest-junit": "^17.0.0"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
