@@ -57,11 +57,26 @@ lint:
 
 # ---------------------------------------------------------------- test
 
+# Les tests publient deux rapports lus nativement par GitLab :
+#   - JUnit  -> les tests en échec s'affichent DANS la merge request, sans
+#              avoir à ouvrir les logs du job ;
+#   - Cobertura -> la couverture s'affiche ligne par ligne dans la diff.
+# Le seuil de couverture est fixé à 40 % (la baseline de l'audit) et montera
+# par paliers vers 80 % : on verrouille l'acquis sans bloquer les équipes.
 test:
   extends: .node
   stage: test
   script:
     - npm test
+  coverage: '/All files\s*\|\s*([0-9.]+)/'
+  artifacts:
+    when: always
+    reports:
+      junit: reports/junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: app/coverage/cobertura-coverage.xml
+    paths: [app/coverage]
 
 # ------------------------------------------------------------- package
 
@@ -124,6 +139,19 @@ gitleaks:
   artifacts:
     when: always
     paths: [reports/gitleaks.json]
+
+# Audit des dépendances : les vulnérabilités qui n'arrivent pas par l'image
+# mais par le `package.json`. Volontairement NON bloquant au démarrage
+# (`allow_failure`) — c'est le principe « d'abord observer, puis bloquer » :
+# on laisse quatre semaines aux équipes pour assainir avant de fermer la porte.
+# Retirer `allow_failure` le jour où le compteur est à zéro.
+deps-audit:
+  extends: .node
+  stage: security
+  needs: []
+  allow_failure: true
+  script:
+    - npm run audit
 
 # -------------------------------------------------------------- verify
 

@@ -5,11 +5,12 @@
 # la notification (6e étape côté GitLab) n'est pas câblée ici.
 #
 # Déclenché à chaque push et pull request. Cinq étapes :
-#   lint     : qualité de code (ESLint)
-#   test     : tests unitaires (Jest) — le pipeline échoue si un test est rouge
+#   lint     : qualité de code + règles de sécurité (ESLint + eslint-plugin-security)
+#   test     : tests unitaires (Jest), couverture et rapport JUnit publiés
 #   build    : image Docker construite et archivée en artefact
 #   security : Trivy (vulnérabilités de l'image, bloquant HIGH/CRITICAL)
 #              + gitleaks (secrets dans l'historique git, bloquant)
+#              + npm audit (dépendances, en observation)
 #   verify   : smoke test — le conteneur est réellement démarré et interrogé
 #
 # Chaque étape correspond à un job du même nom dans l'onglet Actions.
@@ -28,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm, cache-dependency-path: app/package.json }
+        with: { node-version: 20, cache: npm, cache-dependency-path: app/package-lock.json }
       - run: npm install
       - run: npm run lint
 
@@ -39,9 +40,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm, cache-dependency-path: app/package.json }
+        with: { node-version: 20, cache: npm, cache-dependency-path: app/package-lock.json }
       - run: npm install
       - run: npm test
+      - name: Publier les rapports (tests + couverture)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapports-tests
+          path: |
+            reports/junit.xml
+            app/coverage/cobertura-coverage.xml
+          retention-days: 3
+
+  # Audit des dependances : les vulnerabilites qui arrivent par le package.json
+  # et non par l'image. Non bloquant au demarrage (continue-on-error) — principe
+  # « d'abord observer, puis bloquer » du livrable 3.
+  deps-audit:
+    name: Audit des dependances (npm audit)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    defaults: { run: { working-directory: app } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm, cache-dependency-path: app/package-lock.json }
+      - run: npm install
+      - run: npm run audit
 
   build:
     name: Build image Docker

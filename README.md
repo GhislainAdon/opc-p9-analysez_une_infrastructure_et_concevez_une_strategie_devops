@@ -24,10 +24,10 @@ propre composant.
 
 | Étape | Ce qu'elle fait | Pourquoi c'est utile pour toi |
 |---|---|---|
-| **1. Lint** | Vérifie le style et les erreurs courantes du code (ESLint) | Attrape les fautes d'inattention avant la revue |
-| **2. Tests** | Lance les tests unitaires (Jest) | Prouve que ton changement ne casse rien |
+| **1. Lint** | Vérifie le style, les erreurs courantes **et les motifs de code dangereux** (ESLint + `eslint-plugin-security`) | Attrape les fautes d'inattention — et les mauvaises pratiques de sécurité — avant la revue |
+| **2. Tests** | Lance les tests unitaires (Jest), publie le **rapport JUnit** et la **couverture** (seuil : 40 %) | Prouve que ton changement ne casse rien — et les tests en échec s'affichent directement dans ta merge request |
 | **3. Package** | Construit l'image Docker de l'application | La même image tournera en intégration puis en production |
-| **4. Sécurité** | Scanne l'image avec **Trivy** et l'historique git avec **gitleaks** — les deux **bloquent** | Ni faille connue, ni mot de passe oublié ne partent en production |
+| **4. Sécurité** | Scanne l'image avec **Trivy**, l'historique git avec **gitleaks** (les deux **bloquent**) et les dépendances avec **`npm audit`** (en observation, non bloquant) | Ni faille connue, ni mot de passe oublié ne partent en production |
 | **5. Vérification** | Démarre réellement le conteneur et appelle ses routes (*smoke test*) | Une image qui compile n'est pas forcément une image qui démarre |
 | **6. Notification** | Publie le résultat sur Discord | Tu sais en 2 minutes si ton push est passé, sans surveiller l'écran |
 
