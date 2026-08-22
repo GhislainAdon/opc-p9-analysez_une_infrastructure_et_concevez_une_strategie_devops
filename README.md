@@ -83,7 +83,7 @@ docker run -p 3000:3000 glossaflow-api
 5. **Pipeline vert + 1 relecture approuvée** → merge. C'est tout.
 
 ⚠️ Règles d'or :
-- Jamais de mot de passe, token ou clé dans le code — les secrets vont dans les **variables CI/CD masquées** (GitLab : *Settings → CI/CD → Variables* ; GitHub : *Settings → Secrets*). Demande à l'équipe plateforme.
+- Jamais de mot de passe, token ou clé dans le code — les secrets vont dans les **variables CI/CD masquées** (GitLab : *Settings → CI/CD → Variables* ; GitHub : *Settings → Secrets*). Demande à l'équipe plateforme. Pour tes variables locales : `cp .env.example .env` — le `.env` est gitignoré, et le gabarit ne contient que des valeurs factices.
 - Si le scan **Trivy** bloque ta MR : c'est une vraie vulnérabilité dans une dépendance. Mets à jour la dépendance (`npm update <paquet>`) ; si aucun correctif n'existe, parle-nous-en — ne contourne jamais le scan seul.
 - Si le scan **gitleaks** bloque ta MR : un secret est présent dans un commit. Le retirer du dernier commit ne suffit pas (il reste dans l'historique) — préviens l'équipe plateforme, le secret doit être **révoqué** puis l'historique nettoyé.
 - Un test rouge n'est jamais « à corriger plus tard ».
@@ -101,6 +101,7 @@ app/
 .github/workflows/ci.yml # les 5 mêmes étapes de contrôle (miroir GitHub)
 .trivyignore             # exceptions de vulnérabilités (gouvernées par l'équipe plateforme)
 .gitleaks.toml           # chemins légitimes exclus du scan de secrets
+.env.example             # gabarit des variables d'environnement (valeurs factices)
 .devcontainer/           # environnement prêt à l'emploi (Codespaces / VS Code)
 ```
 
