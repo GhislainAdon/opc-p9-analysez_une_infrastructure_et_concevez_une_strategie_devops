@@ -116,7 +116,7 @@ tous les composants GlossaFlow et GlossaLearn.
 
 ## Documentation du projet
 
-- 📓 **[Journal d'Utilisation de l'IA (Notion)](https://app.notion.com/p/Repertoire-des-Jounaux-de-l-ia-37aee836963f8038a4ffc021e82d4677&source=copy_link)** : journal de suivi de l'usage réfléchi de l'IA et de l'analyse de ses réponses tout au long du projet.
+- 📓 **[Journal d'Utilisation de l'IA (Notion)](https://app.notion.com/p/Repertoire-des-Jounaux-de-l-ia-37aee836963f8038a4ffc021e82d4677?source=copy_link)** : journal de suivi de l'usage réfléchi de l'IA et de l'analyse de ses réponses tout au long du projet.
 - 📄 Les trois documents de la transformation (rapport d'analyse, document technique, proposition de processus DevOps) accompagnent ce dépôt dans le dossier de livraison.
 
 **Une question ?** Canal `#plateforme` — aucune question n'est bête, et si la
